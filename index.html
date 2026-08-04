@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>履修シミュレーター</title>
+  <title>4年間 履修シミュレーター</title>
   <style>
-   :root {
-  --bg-color: #FFE3B3;       /* 画面全体の背景 */
-  --card-bg: #ffffff;        /* 各パネルの白背景 */
-  --border-color: #FA8072;   /* 枠線の色 */
-  --primary-color: #FFB6C1;  /* メインの青色（ボタンや合計単位など） */
-  --allowed-color: #10b981;  /* ドロップできる時の緑色 */
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --primary-color: #3b82f6;
+      --text-color: #1e293b;
+      --allowed-color: #10b981;
     }
 
     body {
@@ -21,15 +22,36 @@
       padding: 20px;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
+    /* 画面切り替えタブ */
+    .tab-navigation {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      background: #e2e8f0;
+      color: #64748b;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-color);
+      color: white;
     }
 
     .header-info {
       display: flex;
       align-items: center;
-      gap: 20px;
+      justify-content: space-between;
       margin-bottom: 20px;
       background: var(--card-bg);
       padding: 15px 20px;
@@ -43,13 +65,92 @@
       color: var(--primary-color);
     }
 
+    /* ビュー切り替えコンテナ */
+    .view-content { display: none; }
+    .view-content.active { display: block; }
+
+    /* ==========================================
+       4年間一括表示（オーバービュー）
+    ========================================== */
+    .four-years-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .semester-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .semester-card header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .semester-card h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #334155;
+    }
+
+    .semester-card .sem-credits {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .semester-course-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-height: 100px;
+    }
+
+    .mini-course-item {
+      background: #f1f5f9;
+      border-left: 3px solid var(--primary-color);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .jump-btn {
+      margin-top: 12px;
+      padding: 6px;
+      background: #eff6ff;
+      color: var(--primary-color);
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+    .jump-btn:hover { background: #dbeafe; }
+
+    /* ==========================================
+       単一学期シミュレーター
+    ========================================== */
     .app-container {
       display: grid;
       grid-template-columns: 340px 1fr;
       gap: 20px;
     }
 
-    /* サイドバー */
     .sidebar {
       background: var(--card-bg);
       padding: 15px;
@@ -76,14 +177,13 @@
       border-radius: 6px;
     }
 
-    .add-form input[type="text"], .add-form input[type="number"] {
+    .add-form input[type="text"], .add-form input[type="number"], .add-form select {
       padding: 6px 8px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
       font-size: 0.85rem;
     }
 
-    /* 曜日・時限の選択グリッド */
     .slot-picker {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -94,22 +194,11 @@
       padding: 6px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
-      max-height: 150px;
+      max-height: 120px;
       overflow-y: auto;
     }
-
-    .slot-picker header {
-      font-weight: bold;
-      background: #e2e8f0;
-      padding: 2px 0;
-    }
-
-    .slot-picker label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
+    .slot-picker header { font-weight: bold; background: #e2e8f0; padding: 2px 0; }
+    .slot-picker label { display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
     .add-btn {
       background: var(--primary-color);
@@ -121,18 +210,15 @@
       cursor: pointer;
     }
 
-    .add-btn:hover { background: #2563eb; }
-
     .course-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 350px;
+      max-height: 300px;
       overflow-y: auto;
       padding-right: 4px;
     }
 
-    /* 科目カード */
     .course-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
@@ -146,234 +232,199 @@
 
     .course-card:active { cursor: grabbing; }
 
-    .course-card .title {
-      font-weight: bold;
-      font-size: 0.9rem;
-      padding-right: 20px;
-    }
-
-    .course-card .meta {
-      font-size: 0.78rem;
-      color: #64748b;
-      margin-top: 4px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    .course-card .badge {
-      background: #dbeafe;
-      color: #1e40af;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      font-weight: bold;
-    }
+    .course-card .title { font-weight: bold; font-size: 0.9rem; padding-right: 20px; }
+    .course-card .meta { font-size: 0.78rem; color: #64748b; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .course-card .badge { background: #dbeafe; color: #1e40af; padding: 1px 5px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; }
 
     .delete-btn {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1rem;
-      cursor: pointer;
+      position: absolute; top: 4px; right: 4px; background: none; border: none; color: #94a3b8; font-size: 1rem; cursor: pointer;
     }
-
     .delete-btn:hover { color: #ef4444; }
 
     .trash-zone {
-      padding: 10px;
-      border: 2px dashed #ef4444;
-      background: #fef2f2;
-      color: #ef4444;
-      border-radius: 6px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 0.85rem;
+      padding: 10px; border: 2px dashed #ef4444; background: #fef2f2; color: #ef4444; border-radius: 6px; text-align: center; font-weight: bold; font-size: 0.85rem;
     }
 
-    /* 時間割エリア全体 */
-    .timetable-wrapper {
-      display: flex;
-      gap: 15px;
-    }
+    .timetable-wrapper { display: flex; gap: 15px; }
+    .timetable-container { flex: 1; background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto; }
 
-    .timetable-container {
-      flex: 1;
-      background: var(--card-bg);
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow-x: auto;
-    }
+    .timetable { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .timetable th, .timetable td { border: 1px solid var(--border-color); text-align: center; padding: 4px; }
+    .timetable th, .timetable td.period-label { background: #f1f5f9; font-weight: bold; color: #475569; font-size: 0.85rem; }
 
-    .timetable {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
+    .slot { height: 65px; vertical-align: top; background: #fafafa; transition: all 0.2s; }
+    .slot.target-allowed { background: #ecfdf5; border: 2px dashed var(--allowed-color); }
+    .slot.drag-over { background: #d1fae5 !important; }
 
-    .timetable th, .timetable td {
-      border: 1px solid var(--border-color);
-      text-align: center;
-      padding: 4px;
-    }
-
-    .timetable th, .timetable td.period-label {
-      background: #f1f5f9;
-      font-weight: bold;
-      color: #475569;
-      font-size: 0.85rem;
-    }
-
-    .slot {
-      height: 70px;
-      vertical-align: top;
-      background: #fafafa;
-      transition: all 0.2s;
-    }
-
-    .slot.target-allowed {
-      background: #ecfdf5;
-      border: 2px dashed var(--allowed-color);
-    }
-
-    .slot.drag-over {
-      background: #d1fae5 !important;
-    }
-
-    /* 集中講義エリア */
     .intensive-container {
-      width: 160px;
-      background: var(--card-bg);
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
+      width: 150px; background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column;
     }
-
-    .intensive-container h3 {
-      font-size: 0.95rem;
-      margin: 0 0 10px 0;
-      text-align: center;
-      color: #475569;
-    }
-
-    .slot-intensive {
-      flex: 1;
-      min-height: 200px;
-      border: 2px dashed var(--border-color);
-      border-radius: 6px;
-      background: #fafafa;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .intensive-container h3 { font-size: 0.9rem; margin: 0 0 10px 0; text-align: center; color: #475569; }
+    .slot-intensive { flex: 1; min-height: 180px; border: 2px dashed var(--border-color); border-radius: 6px; background: #fafafa; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
   </style>
 </head>
 <body>
 
-  <h1>📚 履修シミュレーター</h1>
-  
-  <div class="header-info">
-    <div class="total-credits">合計単位数: <span id="credit-count">0</span> 単位</div>
-    <div style="font-size: 0.85rem; color: #64748b;">
-      ※複数コマ開講の科目をドロップすると、指定の曜日・時限すべてに連動して配置されます。
+  <h1>📚 4年間 履修シミュレーター</h1>
+
+  <!-- モード切り替えタブ -->
+  <div class="tab-navigation">
+    <button class="tab-btn active" onclick="switchTab('4years')">🌐 4年間の一括表示</button>
+    <button class="tab-btn" onclick="switchTab('semester')">📅 学期別のシミュレーター</button>
+  </div>
+
+  <!-- 【ビュー 1】 4年間の一括表示 -->
+  <div id="view-4years" class="view-content active">
+    <div class="header-info">
+      <div class="total-credits">4年間の総修得単位: <span id="grand-total-credits">0</span> 単位</div>
+      <div style="font-size: 0.85rem; color: #64748b;">※各学期の「時間割を開く」で詳細なドラッグ＆ドロップ検討ができます。</div>
+    </div>
+    <div class="four-years-grid" id="four-years-container">
+      <!-- 1年春〜4年秋の8カードが動的に読み込まれます -->
     </div>
   </div>
 
-  <div class="app-container">
-    <!-- サイドバー -->
-    <div class="sidebar">
-      <h2>＋ 科目をつくる</h2>
-      
-      <div class="add-form">
-        <input type="text" id="input-name" placeholder="科目名 (例: 集中講義/経済学)" required>
-        
-        <div style="display: flex; gap: 8px; align-items: center; font-size: 0.85rem;">
-          <input type="number" id="input-credits" value="2" min="1" max="10" style="width: 50px;"> 単位
-          <label><input type="checkbox" id="input-is-intensive"> 集中講義</label>
-        </div>
-
-        <!-- 曜日・時限マルチ選択ピッカー -->
-        <div id="picker-wrapper">
-          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 2px;">開講枠を選択（複数可）:</div>
-          <div class="slot-picker" id="slot-picker-grid">
-            <!-- JSで動的生成 -->
-          </div>
-        </div>
-
-        <button class="add-btn" onclick="addNewCourse()">科目リストに追加</button>
+  <!-- 【ビュー 2】 学期別のシミュレーター -->
+  <div id="view-semester" class="view-content">
+    <div class="header-info">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <label style="font-weight: bold; font-size: 1.1rem;">対象学期:</label>
+        <select id="current-semester-select" onchange="changeCurrentSemester()" style="font-size: 1rem; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+          <!-- 8学期選択肢 -->
+        </select>
       </div>
-
-      <h2>履修候補科目</h2>
-      <div id="course-pool" class="course-list"></div>
-
-      <div id="trash-zone" class="trash-zone">
-        🗑️ 時間割から外す（ここへドロップ）
-      </div>
+      <div class="total-credits">この学期の単位数: <span id="semester-total-credits">0</span> 単位</div>
     </div>
 
-    <!-- 時間割 ＋ 集中講義エリア -->
-    <div class="timetable-wrapper">
-      <div class="timetable-container">
-        <table class="timetable">
-          <thead>
-            <tr>
-              <th style="width: 45px;">時限</th>
-              <th>月</th>
-              <th>火</th>
-              <th>水</th>
-              <th>木</th>
-              <th>金</th>
-              <th>土</th>
-            </tr>
-          </thead>
-          <tbody>
-            <script>
-              const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-              for (let i = 1; i <= 6; i++) {
-                document.write(`<tr><td class="period-label">${i}限</td>`);
-                days.forEach(day => {
-                  document.write(`<td class="slot" data-day="${day}" data-period="${i}"></td>`);
-                });
-                document.write(`</tr>`);
-              }
-            </script>
-          </tbody>
-        </table>
+    <div class="app-container">
+      <!-- サイドバー -->
+      <div class="sidebar">
+        <h2>＋ 科目をつくる</h2>
+        
+        <div class="add-form">
+          <input type="text" id="input-name" placeholder="科目名 (例: 経済学入門)" required>
+          
+          <div style="display: flex; gap: 8px; align-items: center; font-size: 0.85rem;">
+            <input type="number" id="input-credits" value="2" min="1" max="10" style="width: 50px;"> 単位
+            <label><input type="checkbox" id="input-is-intensive"> 集中講義</label>
+          </div>
+
+          <div id="picker-wrapper">
+            <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 2px;">開講枠を選択（複数可）:</div>
+            <div class="slot-picker" id="slot-picker-grid"></div>
+          </div>
+
+          <button class="add-btn" onclick="addNewCourse()">科目リストに追加</button>
+        </div>
+
+        <h2>履修候補科目（未配置）</h2>
+        <div id="course-pool" class="course-list"></div>
+
+        <div id="trash-zone" class="trash-zone">
+          🗑️ 時間割から外す（ここへドロップ）
+        </div>
       </div>
 
-      <!-- 集中講義枠 -->
-      <div class="intensive-container">
-        <h3>集中講義</h3>
-        <div class="slot slot-intensive" data-day="intensive" data-period="0"></div>
+      <!-- 時間割エリア -->
+      <div class="timetable-wrapper">
+        <div class="timetable-container">
+          <table class="timetable">
+            <thead>
+              <tr>
+                <th style="width: 45px;">時限</th>
+                <th>月</th>
+                <th>火</th>
+                <th>水</th>
+                <th>木</th>
+                <th>金</th>
+                <th>土</th>
+              </tr>
+            </thead>
+            <tbody>
+              <script>
+                const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                for (let i = 1; i <= 6; i++) {
+                  document.write(`<tr><td class="period-label">${i}限</td>`);
+                  days.forEach(day => {
+                    document.write(`<td class="slot" data-day="${day}" data-period="${i}"></td>`);
+                  });
+                  document.write(`</tr>`);
+                }
+              </script>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="intensive-container">
+          <h3>集中講義</h3>
+          <div class="slot slot-intensive" data-day="intensive" data-period="0"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    const semesterList = [
+      { id: '1spring', name: '1年 春学期' },
+      { id: '1autumn', name: '1年 秋学期' },
+      { id: '2spring', name: '2年 春学期' },
+      { id: '2autumn', name: '2年 秋学期' },
+      { id: '3spring', name: '3年 春学期' },
+      { id: '3autumn', name: '3年 秋学期' },
+      { id: '4spring', name: '4年 春学期' },
+      { id: '4autumn', name: '4年 秋学期' }
+    ];
+
     const daysMap = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土' };
+    let currentSemesterId = '1spring';
     let draggedCard = null;
     let cardIdCounter = 1;
 
-    // 科目データのメモリ領域
-    const courseStore = {};
+    // データストア
+    const courseStore = {}; // { courseId: { id, name, credits, slots, isIntensive, semesterId, isPlaced } }
 
     document.addEventListener('DOMContentLoaded', () => {
+      initSemestersUI();
       buildPickerGrid();
       initSlots();
       initTrash();
-      
-      // サンプルデータの追加
       createSampleData();
+      refreshAllViews();
     });
 
-    // フォームのピッカー格子を作成
+    // タブ切替
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-content').forEach(view => view.classList.remove('active'));
+
+      if (tabName === '4years') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('view-4years').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('view-semester').classList.add('active');
+      }
+      refreshAllViews();
+    }
+
+    // 学期選択UI初期化
+    function initSemestersUI() {
+      const select = document.getElementById('current-semester-select');
+      select.innerHTML = semesterList.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    function changeCurrentSemester() {
+      currentSemesterId = document.getElementById('current-semester-select').value;
+      refreshSemesterView();
+    }
+
+    function jumpToSemester(semId) {
+      currentSemesterId = semId;
+      document.getElementById('current-semester-select').value = semId;
+      switchTab('semester');
+    }
+
+    // ピッカー作成
     function buildPickerGrid() {
       const grid = document.getElementById('slot-picker-grid');
       let html = '<div></div>';
@@ -387,13 +438,12 @@
       }
       grid.innerHTML = html;
 
-      // 集中講義チェックボックスの制御
       document.getElementById('input-is-intensive').addEventListener('change', (e) => {
         document.getElementById('picker-wrapper').style.display = e.target.checked ? 'none' : 'block';
       });
     }
 
-    // 新規科目の追加
+    // 新規科目追加
     function addNewCourse() {
       const name = document.getElementById('input-name').value.trim();
       const credits = document.getElementById('input-credits').value;
@@ -408,42 +458,109 @@
         document.querySelectorAll('.picker-check:checked').forEach(chk => {
           slots.push({ day: chk.dataset.day, period: chk.dataset.period });
         });
-        if (slots.length === 0) {
-          alert('開講する曜日・時限を少なくとも1つ選択してください');
-          return;
-        }
+        if (slots.length === 0) { alert('開講する曜日・時限を選択してください'); return; }
       }
 
-      const courseId = `course-group-${cardIdCounter++}`;
-      courseStore[courseId] = { id: courseId, name, credits: parseInt(credits, 10), slots, isIntensive };
+      const id = `course-${cardIdCounter++}`;
+      courseStore[id] = {
+        id, name, credits: parseInt(credits, 10), slots, isIntensive,
+        semesterId: currentSemesterId, isPlaced: false
+      };
 
-      renderCourseInPool(courseStore[courseId]);
-
-      // フォーム初期化
       document.getElementById('input-name').value = '';
       document.querySelectorAll('.picker-check').forEach(c => c.checked = false);
+
+      refreshAllViews();
     }
 
-    // プールへカードを描画
-    function renderCourseInPool(course) {
+    function deleteCourse(id) {
+      delete courseStore[id];
+      refreshAllViews();
+    }
+
+    // 画面再描画（一括制御）
+    function refreshAllViews() {
+      refresh4YearsView();
+      refreshSemesterView();
+    }
+
+    // 4年間ビューの描画
+    function refresh4YearsView() {
+      const container = document.getElementById('four-years-container');
+      container.innerHTML = '';
+      let grandTotal = 0;
+
+      semesterList.forEach(sem => {
+        const semCourses = Object.values(courseStore).filter(c => c.semesterId === sem.id);
+        const placedCourses = semCourses.filter(c => c.isPlaced);
+        const semCredits = placedCourses.reduce((sum, c) => sum + c.credits, 0);
+        grandTotal += semCredits;
+
+        let courseListHtml = placedCourses.map(c => `
+          <div class="mini-course-item">
+            <span>${escapeHtml(c.name)}</span>
+            <span style="font-weight:bold; color:#64748b;">${c.credits}単位</span>
+          </div>
+        `).join('');
+
+        if (placedCourses.length === 0) {
+          courseListHtml = `<div style="font-size:0.8rem; color:#94a3b8; text-align:center; padding:15px;">履修確定した科目がありません</div>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'semester-card';
+        card.innerHTML = `
+          <header>
+            <h3>${sem.name}</h3>
+            <span class="sem-credits">${semCredits} 単位</span>
+          </header>
+          <div class="semester-course-list">${courseListHtml}</div>
+          <button class="jump-btn" onclick="jumpToSemester('${sem.id}')">時間割を開く・編集 ➔</button>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('grand-total-credits').textContent = grandTotal;
+    }
+
+    // 単一学期シミュレーターの再描画
+    function refreshSemesterView() {
+      // 既存コマのクリア
+      document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
       const pool = document.getElementById('course-pool');
-      const card = createCardElement(course);
-      pool.appendChild(card);
+      pool.innerHTML = '';
+
+      const currentCourses = Object.values(courseStore).filter(c => c.semesterId === currentSemesterId);
+
+      currentCourses.forEach(course => {
+        if (course.isPlaced) {
+          // 時間割内に配置
+          course.slots.forEach(s => {
+            const slotEl = document.querySelector(`.slot[data-day="${s.day}"][data-period="${s.period}"]`);
+            if (slotEl) {
+              slotEl.appendChild(createCardElement(course));
+            }
+          });
+        } else {
+          // プールに配置
+          pool.appendChild(createCardElement(course));
+        }
+      });
+
+      // 単一学期の単位数計算
+      const placedInSem = currentCourses.filter(c => c.isPlaced);
+      const semTotal = placedInSem.reduce((sum, c) => sum + c.credits, 0);
+      document.getElementById('semester-total-credits').textContent = semTotal;
     }
 
-    // カード要素の作成
     function createCardElement(course) {
       const card = document.createElement('div');
       card.className = 'course-card';
       card.draggable = true;
       card.dataset.courseId = course.id;
 
-      let badgesHtml = '';
-      if (course.isIntensive) {
-        badgesHtml = `<span class="badge">集中講義</span>`;
-      } else {
-        badgesHtml = course.slots.map(s => `<span class="badge">${daysMap[s.day]} ${s.period}限</span>`).join('');
-      }
+      let badgesHtml = course.isIntensive ? `<span class="badge">集中</span>` :
+        course.slots.map(s => `<span class="badge">${daysMap[s.day]}${s.period}</span>`).join('');
 
       card.innerHTML = `
         <button class="delete-btn" onclick="deleteCourse('${course.id}')">×</button>
@@ -458,22 +575,15 @@
       return card;
     }
 
-    function deleteCourse(courseId) {
-      delete courseStore[courseId];
-      document.querySelectorAll(`[data-course-id="${courseId}"]`).forEach(el => el.remove());
-      updateTotalCredits();
-    }
-
     function attachCardEvents(card) {
-      card.addEventListener('dragstart', (e) => {
+      card.addEventListener('dragstart', () => {
         draggedCard = card;
         const course = courseStore[card.dataset.courseId];
         card.style.opacity = '0.5';
 
-        // 対象枠のハイライト表示
         course.slots.forEach(s => {
-          const targetSlot = document.querySelector(`.slot[data-day="${s.day}"][data-period="${s.period}"]`);
-          if (targetSlot) targetSlot.classList.add('target-allowed');
+          const slotEl = document.querySelector(`.slot[data-day="${s.day}"][data-period="${s.period}"]`);
+          if (slotEl) slotEl.classList.add('target-allowed');
         });
       });
 
@@ -481,7 +591,6 @@
         card.style.opacity = '1';
         draggedCard = null;
         document.querySelectorAll('.slot').forEach(s => s.classList.remove('target-allowed', 'drag-over'));
-        updateTotalCredits();
       });
     }
 
@@ -490,8 +599,6 @@
         slot.addEventListener('dragover', (e) => {
           if (!draggedCard) return;
           const course = courseStore[draggedCard.dataset.courseId];
-          
-          // 開講枠に合致する場合のみ許可
           const isMatch = course.slots.some(s => s.day === slot.dataset.day && s.period === slot.dataset.period);
           if (isMatch) {
             e.preventDefault();
@@ -507,28 +614,9 @@
           if (!draggedCard) return;
 
           const course = courseStore[draggedCard.dataset.courseId];
+          course.isPlaced = true;
 
-          // 既存の同科目を時間割上から一度すべてクリア
-          document.querySelectorAll(`.slot [data-course-id="${course.id}"]`).forEach(el => el.remove());
-
-          // 複数コマへ一括配置
-          course.slots.forEach(s => {
-            const targetSlot = document.querySelector(`.slot[data-day="${s.day}"][data-period="${s.period}"]`);
-            if (targetSlot) {
-              // 重複科目があればリストに戻す
-              if (targetSlot.children.length > 0) {
-                document.getElementById('course-pool').appendChild(targetSlot.children[0]);
-              }
-              const newCard = createCardElement(course);
-              targetSlot.appendChild(newCard);
-            }
-          });
-
-          // プール側にあった元カードを削除
-          const poolCard = document.querySelector(`#course-pool [data-course-id="${course.id}"]`);
-          if (poolCard) poolCard.remove();
-
-          updateTotalCredits();
+          refreshAllViews();
         });
       });
     }
@@ -539,40 +627,24 @@
       trash.addEventListener('drop', (e) => {
         e.preventDefault();
         if (draggedCard) {
-          const courseId = draggedCard.dataset.courseId;
-          // 時間割から全削除して候補リストに戻す
-          document.querySelectorAll(`.slot [data-course-id="${courseId}"]`).forEach(el => el.remove());
-          renderCourseInPool(courseStore[courseId]);
-          updateTotalCredits();
+          const course = courseStore[draggedCard.dataset.courseId];
+          course.isPlaced = false;
+          refreshAllViews();
         }
       });
-    }
-
-    function updateTotalCredits() {
-      let total = 0;
-      const countedIds = new Set();
-
-      document.querySelectorAll('.slot .course-card').forEach(card => {
-        const id = card.dataset.courseId;
-        if (!countedIds.has(id)) {
-          countedIds.add(id);
-          total += courseStore[id].credits;
-        }
-      });
-      document.getElementById('credit-count').textContent = total;
     }
 
     function createSampleData() {
       const samples = [
-        { name: '英語Ⅰ（週2回）', credits: 2, slots: [{day:'mon', period:'1'}, {day:'thu', period:'1'}], isIntensive: false },
-        { name: 'プログラミング実践', credits: 2, slots: [{day:'wed', period:'3'}], isIntensive: false },
-        { name: '夏期集中：データ分析', credits: 2, slots: [{day:'intensive', period:'0'}], isIntensive: true }
+        { name: '経済学入門', credits: 2, slots: [{day:'mon', period:'1'}], isIntensive: false, semesterId: '1spring', isPlaced: true },
+        { name: 'プログラミング基礎', credits: 2, slots: [{day:'wed', period:'3'}], isIntensive: false, semesterId: '1spring', isPlaced: true },
+        { name: 'マーケティング論', credits: 2, slots: [{day:'tue', period:'2'}], isIntensive: false, semesterId: '2spring', isPlaced: true },
+        { name: 'インターンシップ演習', credits: 2, slots: [{day:'intensive', period:'0'}], isIntensive: true, semesterId: '3spring', isPlaced: true }
       ];
 
       samples.forEach(s => {
-        const id = `course-group-${cardIdCounter++}`;
+        const id = `course-${cardIdCounter++}`;
         courseStore[id] = { id, ...s };
-        renderCourseInPool(courseStore[id]);
       });
     }
 

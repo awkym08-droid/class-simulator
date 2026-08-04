@@ -11,6 +11,7 @@
       --border-color: #e2e8f0;
       --primary-color: #3b82f6;
       --text-color: #1e293b;
+      --allowed-color: #10b981;
     }
 
     body {
@@ -45,76 +46,163 @@
 
     .app-container {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 340px 1fr;
       gap: 20px;
     }
 
-    /* 科目候補エリア */
+    /* サイドバー */
     .sidebar {
       background: var(--card-bg);
       padding: 15px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      height: fit-content;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     .sidebar h2 {
       font-size: 1.1rem;
-      margin-top: 0;
+      margin: 0;
       border-bottom: 2px solid var(--border-color);
       padding-bottom: 8px;
     }
+
+    .add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .add-form input[type="text"], .add-form input[type="number"] {
+      padding: 6px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    /* 曜日・時限の選択グリッド */
+    .slot-picker {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      font-size: 0.75rem;
+      text-align: center;
+      background: #fff;
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .slot-picker header {
+      font-weight: bold;
+      background: #e2e8f0;
+      padding: 2px 0;
+    }
+
+    .slot-picker label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .add-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .add-btn:hover { background: #2563eb; }
 
     .course-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      min-height: 100px;
+      max-height: 350px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
-    /* ドラッグ可能な科目カード */
+    /* 科目カード */
     .course-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
       border-left: 4px solid var(--primary-color);
-      padding: 10px;
+      padding: 8px 10px;
       border-radius: 6px;
       cursor: grab;
       user-select: none;
-      transition: transform 0.1s, box-shadow 0.1s;
+      position: relative;
     }
 
-    .course-card:active {
-      cursor: grabbing;
-      transform: scale(0.98);
-    }
+    .course-card:active { cursor: grabbing; }
 
     .course-card .title {
       font-weight: bold;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      padding-right: 20px;
     }
 
     .course-card .meta {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: #64748b;
       margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
     }
 
-    /* ゴミ箱エリア */
+    .course-card .badge {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: bold;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover { color: #ef4444; }
+
     .trash-zone {
-      margin-top: 20px;
-      padding: 15px;
+      padding: 10px;
       border: 2px dashed #ef4444;
       background: #fef2f2;
       color: #ef4444;
       border-radius: 6px;
       text-align: center;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
-    /* 時間割グリッド */
+    /* 時間割エリア全体 */
+    .timetable-wrapper {
+      display: flex;
+      gap: 15px;
+    }
+
     .timetable-container {
+      flex: 1;
       background: var(--card-bg);
       padding: 15px;
       border-radius: 8px;
@@ -131,38 +219,60 @@
     .timetable th, .timetable td {
       border: 1px solid var(--border-color);
       text-align: center;
-      padding: 8px;
+      padding: 4px;
     }
 
-    .timetable th {
+    .timetable th, .timetable td.period-label {
       background: #f1f5f9;
       font-weight: bold;
       color: #475569;
+      font-size: 0.85rem;
     }
 
-    .timetable td.period-label {
-      background: #f1f5f9;
-      font-weight: bold;
-      width: 60px;
-      color: #475569;
-    }
-
-    /* ドロップ対象のセル */
     .slot {
-      height: 80px;
+      height: 70px;
       vertical-align: top;
       background: #fafafa;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
+    }
+
+    .slot.target-allowed {
+      background: #ecfdf5;
+      border: 2px dashed var(--allowed-color);
     }
 
     .slot.drag-over {
-      background: #e0f2fe;
-      border: 2px dashed var(--primary-color);
+      background: #d1fae5 !important;
     }
 
-    .slot .course-card {
-      height: 100%;
-      box-sizing: border-box;
+    /* 集中講義エリア */
+    .intensive-container {
+      width: 160px;
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .intensive-container h3 {
+      font-size: 0.95rem;
+      margin: 0 0 10px 0;
+      text-align: center;
+      color: #475569;
+    }
+
+    .slot-intensive {
+      flex: 1;
+      min-height: 200px;
+      border: 2px dashed var(--border-color);
+      border-radius: 6px;
+      background: #fafafa;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
   </style>
 </head>
@@ -172,165 +282,303 @@
   
   <div class="header-info">
     <div class="total-credits">合計単位数: <span id="credit-count">0</span> 単位</div>
-    <div style="font-size: 0.85rem; color: #64748b;">※科目をドラッグして時間割に配置してください。ゴミ箱で解除できます。</div>
+    <div style="font-size: 0.85rem; color: #64748b;">
+      ※複数コマ開講の科目をドロップすると、指定の曜日・時限すべてに連動して配置されます。
+    </div>
   </div>
 
   <div class="app-container">
-    <!-- サイドバー：履修候補 -->
+    <!-- サイドバー -->
     <div class="sidebar">
-      <h2>履修候補科目</h2>
-      <div id="course-pool" class="course-list">
-        <div class="course-card" draggable="true" id="course-1" data-credits="2" data-name="経済学入門">
-          <div class="title">経済学入門</div>
-          <div class="meta">2単位</div>
+      <h2>＋ 科目をつくる</h2>
+      
+      <div class="add-form">
+        <input type="text" id="input-name" placeholder="科目名 (例: 集中講義/経済学)" required>
+        
+        <div style="display: flex; gap: 8px; align-items: center; font-size: 0.85rem;">
+          <input type="number" id="input-credits" value="2" min="1" max="10" style="width: 50px;"> 単位
+          <label><input type="checkbox" id="input-is-intensive"> 集中講義</label>
         </div>
-        <div class="course-card" draggable="true" id="course-2" data-credits="2" data-name="プログラミング基礎">
-          <div class="title">プログラミング基礎</div>
-          <div class="meta">2単位</div>
+
+        <!-- 曜日・時限マルチ選択ピッカー -->
+        <div id="picker-wrapper">
+          <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 2px;">開講枠を選択（複数可）:</div>
+          <div class="slot-picker" id="slot-picker-grid">
+            <!-- JSで動的生成 -->
+          </div>
         </div>
-        <div class="course-card" draggable="true" id="course-3" data-credits="1" data-name="英語コミュニケーション">
-          <div class="title">英語コミュニケーション</div>
-          <div class="meta">1単位</div>
-        </div>
-        <div class="course-card" draggable="true" id="course-4" data-credits="2" data-name="経営学概論">
-          <div class="title">経営学概論</div>
-          <div class="meta">2単位</div>
-        </div>
-        <div class="course-card" draggable="true" id="course-5" data-credits="2" data-name="統計学">
-          <div class="title">統計学</div>
-          <div class="meta">2単位</div>
-        </div>
+
+        <button class="add-btn" onclick="addNewCourse()">科目リストに追加</button>
       </div>
 
-      <!-- 解除用エリア -->
+      <h2>履修候補科目</h2>
+      <div id="course-pool" class="course-list"></div>
+
       <div id="trash-zone" class="trash-zone">
-        🗑️ ここにドロップして解除
+        🗑️ 時間割から外す（ここへドロップ）
       </div>
     </div>
 
-    <!-- 時間割表 -->
-    <div class="timetable-container">
-      <table class="timetable">
-        <thead>
-          <tr>
-            <th>時限</th>
-            <th>月</th>
-            <th>火</th>
-            <th>水</th>
-            <th>木</th>
-            <th>金</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 1〜5限のセルを生成 -->
-          <script>
-            for (let i = 1; i <= 5; i++) {
-              document.write(`
-                <tr>
-                  <td class="period-label">${i}限</td>
-                  <td class="slot" data-day="mon" data-period="${i}"></td>
-                  <td class="slot" data-day="tue" data-period="${i}"></td>
-                  <td class="slot" data-day="wed" data-period="${i}"></td>
-                  <td class="slot" data-day="thu" data-period="${i}"></td>
-                  <td class="slot" data-day="fri" data-period="${i}"></td>
-                </tr>
-              `);
-            }
-          </script>
-        </tbody>
-      </table>
+    <!-- 時間割 ＋ 集中講義エリア -->
+    <div class="timetable-wrapper">
+      <div class="timetable-container">
+        <table class="timetable">
+          <thead>
+            <tr>
+              <th style="width: 45px;">時限</th>
+              <th>月</th>
+              <th>火</th>
+              <th>水</th>
+              <th>木</th>
+              <th>金</th>
+              <th>土</th>
+            </tr>
+          </thead>
+          <tbody>
+            <script>
+              const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+              for (let i = 1; i <= 6; i++) {
+                document.write(`<tr><td class="period-label">${i}限</td>`);
+                days.forEach(day => {
+                  document.write(`<td class="slot" data-day="${day}" data-period="${i}"></td>`);
+                });
+                document.write(`</tr>`);
+              }
+            </script>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 集中講義枠 -->
+      <div class="intensive-container">
+        <h3>集中講義</h3>
+        <div class="slot slot-intensive" data-day="intensive" data-period="0"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    let draggedElement = null;
+    const daysMap = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土' };
+    let draggedCard = null;
+    let cardIdCounter = 1;
 
-    // イベントリスナーの初期化
+    // 科目データのメモリ領域
+    const courseStore = {};
+
     document.addEventListener('DOMContentLoaded', () => {
-      setupDraggables();
-      setupSlots();
-      setupTrash();
+      buildPickerGrid();
+      initSlots();
+      initTrash();
+      
+      // サンプルデータの追加
+      createSampleData();
     });
 
-    function setupDraggables() {
-      const cards = document.querySelectorAll('.course-card');
-      cards.forEach(card => {
-        card.addEventListener('dragstart', (e) => {
-          draggedElement = card;
-          e.dataTransfer.setData('text/plain', card.id);
-          card.style.opacity = '0.5';
-        });
+    // フォームのピッカー格子を作成
+    function buildPickerGrid() {
+      const grid = document.getElementById('slot-picker-grid');
+      let html = '<div></div>';
+      Object.values(daysMap).forEach(d => html += `<header>${d}</header>`);
 
-        card.addEventListener('dragend', () => {
-          card.style.opacity = '1';
-          draggedElement = null;
-          updateTotalCredits();
+      for (let p = 1; p <= 6; p++) {
+        html += `<header>${p}</header>`;
+        Object.keys(daysMap).forEach(d => {
+          html += `<label><input type="checkbox" class="picker-check" data-day="${d}" data-period="${p}"></label>`;
         });
+      }
+      grid.innerHTML = html;
+
+      // 集中講義チェックボックスの制御
+      document.getElementById('input-is-intensive').addEventListener('change', (e) => {
+        document.getElementById('picker-wrapper').style.display = e.target.checked ? 'none' : 'block';
       });
     }
 
-    function setupSlots() {
-      const slots = document.querySelectorAll('.slot');
-      slots.forEach(slot => {
+    // 新規科目の追加
+    function addNewCourse() {
+      const name = document.getElementById('input-name').value.trim();
+      const credits = document.getElementById('input-credits').value;
+      const isIntensive = document.getElementById('input-is-intensive').checked;
+
+      if (!name) { alert('科目名を入力してください'); return; }
+
+      let slots = [];
+      if (isIntensive) {
+        slots.push({ day: 'intensive', period: '0' });
+      } else {
+        document.querySelectorAll('.picker-check:checked').forEach(chk => {
+          slots.push({ day: chk.dataset.day, period: chk.dataset.period });
+        });
+        if (slots.length === 0) {
+          alert('開講する曜日・時限を少なくとも1つ選択してください');
+          return;
+        }
+      }
+
+      const courseId = `course-group-${cardIdCounter++}`;
+      courseStore[courseId] = { id: courseId, name, credits: parseInt(credits, 10), slots, isIntensive };
+
+      renderCourseInPool(courseStore[courseId]);
+
+      // フォーム初期化
+      document.getElementById('input-name').value = '';
+      document.querySelectorAll('.picker-check').forEach(c => c.checked = false);
+    }
+
+    // プールへカードを描画
+    function renderCourseInPool(course) {
+      const pool = document.getElementById('course-pool');
+      const card = createCardElement(course);
+      pool.appendChild(card);
+    }
+
+    // カード要素の作成
+    function createCardElement(course) {
+      const card = document.createElement('div');
+      card.className = 'course-card';
+      card.draggable = true;
+      card.dataset.courseId = course.id;
+
+      let badgesHtml = '';
+      if (course.isIntensive) {
+        badgesHtml = `<span class="badge">集中講義</span>`;
+      } else {
+        badgesHtml = course.slots.map(s => `<span class="badge">${daysMap[s.day]} ${s.period}限</span>`).join('');
+      }
+
+      card.innerHTML = `
+        <button class="delete-btn" onclick="deleteCourse('${course.id}')">×</button>
+        <div class="title">${escapeHtml(course.name)}</div>
+        <div class="meta">
+          <span>${course.credits}単位</span>
+          ${badgesHtml}
+        </div>
+      `;
+
+      attachCardEvents(card);
+      return card;
+    }
+
+    function deleteCourse(courseId) {
+      delete courseStore[courseId];
+      document.querySelectorAll(`[data-course-id="${courseId}"]`).forEach(el => el.remove());
+      updateTotalCredits();
+    }
+
+    function attachCardEvents(card) {
+      card.addEventListener('dragstart', (e) => {
+        draggedCard = card;
+        const course = courseStore[card.dataset.courseId];
+        card.style.opacity = '0.5';
+
+        // 対象枠のハイライト表示
+        course.slots.forEach(s => {
+          const targetSlot = document.querySelector(`.slot[data-day="${s.day}"][data-period="${s.period}"]`);
+          if (targetSlot) targetSlot.classList.add('target-allowed');
+        });
+      });
+
+      card.addEventListener('dragend', () => {
+        card.style.opacity = '1';
+        draggedCard = null;
+        document.querySelectorAll('.slot').forEach(s => s.classList.remove('target-allowed', 'drag-over'));
+        updateTotalCredits();
+      });
+    }
+
+    function initSlots() {
+      document.querySelectorAll('.slot').forEach(slot => {
         slot.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          slot.classList.add('drag-over');
+          if (!draggedCard) return;
+          const course = courseStore[draggedCard.dataset.courseId];
+          
+          // 開講枠に合致する場合のみ許可
+          const isMatch = course.slots.some(s => s.day === slot.dataset.day && s.period === slot.dataset.period);
+          if (isMatch) {
+            e.preventDefault();
+            slot.classList.add('drag-over');
+          }
         });
 
-        slot.addEventListener('dragleave', () => {
-          slot.classList.remove('drag-over');
-        });
+        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
 
         slot.addEventListener('drop', (e) => {
           e.preventDefault();
           slot.classList.remove('drag-over');
-          
-          if (draggedElement) {
-            // セル内に既にカードがある場合は候補リストに戻す
-            if (slot.children.length > 0) {
-              document.getElementById('course-pool').appendChild(slot.children[0]);
+          if (!draggedCard) return;
+
+          const course = courseStore[draggedCard.dataset.courseId];
+
+          // 既存の同科目を時間割上から一度すべてクリア
+          document.querySelectorAll(`.slot [data-course-id="${course.id}"]`).forEach(el => el.remove());
+
+          // 複数コマへ一括配置
+          course.slots.forEach(s => {
+            const targetSlot = document.querySelector(`.slot[data-day="${s.day}"][data-period="${s.period}"]`);
+            if (targetSlot) {
+              // 重複科目があればリストに戻す
+              if (targetSlot.children.length > 0) {
+                document.getElementById('course-pool').appendChild(targetSlot.children[0]);
+              }
+              const newCard = createCardElement(course);
+              targetSlot.appendChild(newCard);
             }
-            slot.appendChild(draggedElement);
-            updateTotalCredits();
-          }
+          });
+
+          // プール側にあった元カードを削除
+          const poolCard = document.querySelector(`#course-pool [data-course-id="${course.id}"]`);
+          if (poolCard) poolCard.remove();
+
+          updateTotalCredits();
         });
       });
     }
 
-    function setupTrash() {
+    function initTrash() {
       const trash = document.getElementById('trash-zone');
-      const pool = document.getElementById('course-pool');
-
-      trash.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        trash.style.background = '#fecaca';
-      });
-
-      trash.addEventListener('dragleave', () => {
-        trash.style.background = '#fef2f2';
-      });
-
+      trash.addEventListener('dragover', (e) => e.preventDefault());
       trash.addEventListener('drop', (e) => {
         e.preventDefault();
-        trash.style.background = '#fef2f2';
-        if (draggedElement) {
-          pool.appendChild(draggedElement);
+        if (draggedCard) {
+          const courseId = draggedCard.dataset.courseId;
+          // 時間割から全削除して候補リストに戻す
+          document.querySelectorAll(`.slot [data-course-id="${courseId}"]`).forEach(el => el.remove());
+          renderCourseInPool(courseStore[courseId]);
           updateTotalCredits();
         }
       });
     }
 
-    // 合計単位数のリアルタイム集計
     function updateTotalCredits() {
       let total = 0;
-      const slots = document.querySelectorAll('.slot');
-      slots.forEach(slot => {
-        const card = slot.querySelector('.course-card');
-        if (card) {
-          total += parseInt(card.dataset.credits, 10);
+      const countedIds = new Set();
+
+      document.querySelectorAll('.slot .course-card').forEach(card => {
+        const id = card.dataset.courseId;
+        if (!countedIds.has(id)) {
+          countedIds.add(id);
+          total += courseStore[id].credits;
         }
       });
       document.getElementById('credit-count').textContent = total;
+    }
+
+    function createSampleData() {
+      const samples = [
+        { name: '英語Ⅰ（週2回）', credits: 2, slots: [{day:'mon', period:'1'}, {day:'thu', period:'1'}], isIntensive: false },
+        { name: 'プログラミング実践', credits: 2, slots: [{day:'wed', period:'3'}], isIntensive: false },
+        { name: '夏期集中：データ分析', credits: 2, slots: [{day:'intensive', period:'0'}], isIntensive: true }
+      ];
+
+      samples.forEach(s => {
+        const id = `course-group-${cardIdCounter++}`;
+        courseStore[id] = { id, ...s };
+        renderCourseInPool(courseStore[id]);
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
   </script>
 </body>
